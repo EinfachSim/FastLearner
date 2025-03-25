@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload PDF</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        #drop-area {
+            width: 300px; height: 200px;
+            border: 2px dashed #ccc;
+            display: flex; align-items: center; justify-content: center;
+            margin: 20px auto;
+            flex-direction: column;
+        }
+        #drop-area.highlight { border-color: blue; }
+        #file-input { display: none; }
+        #upload-btn { margin-top: 10px; padding: 10px 20px; cursor: pointer; }
+        #file-name { margin-top: 10px; font-weight: bold; color: green; }
+    </style>
+</head>
+<body>
+    <h2>Upload a PDF</h2>
+    <div id="drop-area">
+        <p>Drag & Drop PDF here or <label for="file-input" style="color: blue; cursor: pointer;">browse</label></p>
+        <input type="file" id="file-input" accept="application/pdf">
+        <p id="file-name">No file selected</p>
+    </div>
+    <button id="upload-btn">Upload</button>
+    <p id="status"></p>
+
+    <button id="start-chat-btn">Start Chatting</button>
+
+    <script>
+        document.getElementById('start-chat-btn').addEventListener('click', () => {
+            window.location.href = '/chat';  // Redirect to the chat page
+        });
+
+
+        let dropArea = document.getElementById('drop-area');
+        let fileInput = document.getElementById('file-input');
+        let uploadBtn = document.getElementById('upload-btn');
+        let statusText = document.getElementById('status');
+        let fileNameText = document.getElementById('file-name');
+        let selectedFile;
+
+        dropArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropArea.classList.add('highlight');
+        });
+
+        dropArea.addEventListener('dragleave', () => dropArea.classList.remove('highlight'));
+
+        dropArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropArea.classList.remove('highlight');
+            selectedFile = e.dataTransfer.files[0];
+            fileNameText.textContent = selectedFile ? `Selected: ${selectedFile.name}` : "No file selected";
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            selectedFile = e.target.files[0];
+            fileNameText.textContent = selectedFile ? `Selected: ${selectedFile.name}` : "No file selected";
+        });
+
+        uploadBtn.addEventListener('click', () => {
+            if (!selectedFile) {
+                statusText.textContent = "No file selected!";
+                return;
+            }
+            let formData = new FormData();
+            formData.append('file', selectedFile);
+            fetch('/upload', { method: 'POST', body: formData })
+                .then(response => response.text())
+                .then(data => statusText.textContent = data)
+                .catch(error => statusText.textContent = "Upload failed!");
+        });
+    </script>
+</body>
+</html>
