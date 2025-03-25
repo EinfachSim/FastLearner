@@ -14,7 +14,12 @@ class MistralRAGAgentRemote:
     def __init__(self, model="mistral-tiny"):
         self.API_KEY = os.environ['MISTRAL_API_KEY']
         self.pages = []
+        self.vector_store = None
         self.embedder = CustomEmbedderMistral()
+    def clear_vector_store(self):
+        if self.vector_store:
+            del self.vector_store
+        self.pages = []
     def ingest_file(self, file_path, length=300, cross=50):
         loader = PyPDFLoader(file_path)
         for page in loader.lazy_load():
@@ -25,16 +30,17 @@ class MistralRAGAgentRemote:
         print("Searching in DB...")
         docs = self.vector_store.similarity_search_with_score(query, k=2)
         context = []
-        if len(docs) == 0:
-            context.append("No context given.")
-        else:
-            for doc in docs:
-                if doc[1] >= 0.5:
-                    context.append(f'[[{doc[0].metadata["page"]}]]: {doc[0].page_content}\n')
+        for doc in docs:
+            print(doc)
+            if doc[1] >= 0.6:
+                context.append(f'[[{doc[0].metadata["page"]}]]: {doc[0].page_content}\n')
+        if len(context) == 0:
+            return "No context specified!"
         print("Search done!")
         return "\n ------- \n".join(context)
     def respond(self, query):
-        chat_template =f"You are a helpful AI assistant. Answer to the next questions using only the given context. If possible also provide the page number on where the information is coming from, as specified in the special [[PAGE_NUMBER]] token. CONTEXT: {self.search(query)}"
+        chat_template =f"You are a helpful AI assistant. Answer to any upcoming questions using only the given context, which you can ignore if the message is not a question. If possible also provide the page number on where the information is coming from, as specified in the special [[PAGE_NUMBER]] token. CONTEXT: {self.search(query)}"
+        print(chat_template)
         headers = {
             "Authorization": f"Bearer {self.API_KEY}",
             "Content-Type": "application/json"
@@ -52,8 +58,11 @@ class MistralRAGAgentRemote:
             for line in response.iter_lines():
                 if line:
                     if line != "data: [DONE]":
-                        line_json = json.loads(line[5:])
-                        yield line_json["choices"][0]["delta"]["content"] # Yield each token
+                        try:
+                            line_json = json.loads(line[5:])
+                            yield line_json["choices"][0]["delta"]["content"] # Yield each token
+                        except:
+                            Exception("Something went wrong...")
         
 
 class RAGAgent:
@@ -91,7 +100,8 @@ class RAGAgent:
             ]
         )
         message = chat_template.format(context=self.search(query), user_input=query)
-        return self.model.stream(message)
+        for chunk in self.model.stream(message):
+            yield chunk.text()
 
 
 class CustomEmbedderMistral(Embeddings):

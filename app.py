@@ -4,7 +4,7 @@ from flask import Flask, render_template, redirect, url_for, request
 import os
 from flask_socketio import SocketIO, send, emit
 import random
-from rag import MistralRAGAgentRemote
+from rag import MistralRAGAgentRemote, RAGAgent
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key'
@@ -16,6 +16,7 @@ assistant = MistralRAGAgentRemote()
 
 @app.route('/')
 def index():
+    assistant.clear_vector_store()
     return render_template("index.html")
 @app.route("/chat")
 def chat():
@@ -40,12 +41,16 @@ def handle_message(msg):
     def stream_response():
         with app.app_context():
             """Iterates over the generator and emits tokens."""
-            for token in assistant.respond(msg):
-                socketio.emit("chat_message", token)  # Emit each token
-                eventlet.sleep(0)  # Yield control to event loop
-            socketio.emit("end_message", "")
+            try:
+                for token in assistant.respond(msg):
+                    socketio.emit("chat_message", token)  # Emit each token
+                    eventlet.sleep(0)  # Yield control to event loop
+                socketio.emit("end_message", "")
+            except:
+                socketio.emit("chat_message", "There was an error, sorry.")
+                socketio.emit("end_message", "")
 
     socketio.start_background_task(stream_response)  # Run the function in the background
 
 if __name__ == '__main__':
-    socketio.run(app, debug=True, allow_unsafe_werkzeug=True, host="0.0.0.0", port="8080")
+    socketio.run(app, debug=True, allow_unsafe_werkzeug=True)

@@ -18,7 +18,7 @@
     <div id="chat-box"></div>
     <input type="text" id="message" placeholder="Type a message...">
     <button onclick="sendMessage()">Send</button>
-    
+    <button onclick="backhome()">Chat to another document</button>
     <script>
         var socket = io();
 
@@ -54,6 +54,10 @@
             msgElement.className = 'assistantMessage';
             chatBox.appendChild(msgElement);
             socket.emit("start_chat", message);
+        }
+        function backhome() {
+            
+            window.location.replace("http://localhost:5000/")
         }
     </script>
 </body>
