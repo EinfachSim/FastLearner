@@ -117,7 +117,7 @@ class CustomEmbedderMistral(Embeddings):
         for i in range(0, len(texts)//chunk_size+1):
             print(f"Currently at chunk {i}, {(i)*chunk_size}/{len(texts)} embedded.")
             texts_chunk = texts[i*chunk_size:(i+1)*chunk_size]
-            if len(texts_chunk == 0):
+            if len(texts_chunk) == 0:
                 break
             headers = {
                 "Authorization": f"Bearer {self.API_KEY}",
