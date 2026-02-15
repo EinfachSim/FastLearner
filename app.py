@@ -71,6 +71,7 @@ with st.sidebar:
     # Reset all button
     if st.button("🔄 Reset All"):
         st.session_state.assistant.clear_vector_store()
+        st.session_state.assistant.pages = []
         st.session_state.messages = []
         st.session_state.files_uploaded = []
         st.session_state.chat_ready = False
@@ -94,7 +95,7 @@ else:
         
         # Display user message
         with st.chat_message("user"):
-            st.markdown(prompt)
+            st.markdown(prompt, unsafe_allow_html = True)
         
         # Display assistant response with streaming
         with st.chat_message("assistant"):
@@ -105,9 +106,9 @@ else:
                 # Stream the response
                 for token in st.session_state.assistant.respond(prompt):
                     full_response += token
-                    message_placeholder.markdown(full_response + "▌")
+                    message_placeholder.markdown(full_response + "▌", unsafe_allow_html=True)
                 
-                message_placeholder.markdown(full_response)
+                message_placeholder.markdown(full_response, unsafe_allow_html=True)
                 
             except Exception as e:
                 error_message = "There was an error processing your request. Please try again."

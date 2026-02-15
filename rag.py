@@ -18,6 +18,7 @@ class BaseAgent:
     def clear_vector_store(self):
         if self.vector_store:
             del self.vector_store
+        else: print("Something went wrong")
     def prepare_all(self):
         if not self.embedder or len(self.pages) == 0:
             raise Exception("No Embedder specified or no pages parsed!")
@@ -45,8 +46,8 @@ class MistralRAGAgentRemote(BaseAgent):
         print("Search done!")
         return "\n ------- \n".join(context)
     def respond(self, query):
-        chat_template =f"You are a helpful AI assistant. Answer to any upcoming questions using only the given context, which you can ignore if the message is not a question. If possible also provide the page number on where the information is coming from, as specified in the special [[PAGE_NUMBER]] token. CONTEXT: {self.search(query)}"
-        print(chat_template)
+        chat_template =f"You are a helpful AI assistant. Answer to any upcoming questions using only the given context, which you can ignore if the message is not a question. If possible also provide the page number on where the information is coming from, as specified in the special [[PAGE_NUMBER]] token. For responding with mathematical content, it is imperative to always wrap every Latex block in dollar signs. Make sure to wrap every math part in $$, also inline stuff! CONTEXT: {self.search(query)}"
+        #print(chat_template)
         headers = {
             "Authorization": f"Bearer {self.API_KEY}",
             "Content-Type": "application/json"
