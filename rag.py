@@ -10,22 +10,28 @@ import httpx
 import json
 import time
 
-class MistralRAGAgentRemote:
-    def __init__(self, model="mistral-tiny"):
-        self.API_KEY = os.environ['MISTRAL_API_KEY']
-        self.pages = []
+class BaseAgent:
+    def __init__(self):
         self.vector_store = None
-        self.embedder = CustomEmbedderMistral()
+        self.pages = []
+        self.embedder = None
     def clear_vector_store(self):
         if self.vector_store:
             del self.vector_store
-        self.pages = []
+    def prepare_all(self):
+        if not self.embedder or len(self.pages) == 0:
+            raise Exception("No Embedder specified or no pages parsed!")
+        self.vector_store = InMemoryVectorStore.from_documents(self.pages, self.embedder)
+    
+class MistralRAGAgentRemote(BaseAgent):
+    def __init__(self, model="mistral-tiny"):
+        super().__init__()
+        self.API_KEY = os.environ['MISTRAL_API_KEY']
+        self.embedder = CustomEmbedderMistral()
     def ingest_file(self, file_path, length=300, cross=50):
         loader = PyPDFLoader(file_path)
         for page in loader.lazy_load():
             self.pages.append(page)
-    def prepare_all(self):
-        self.vector_store = InMemoryVectorStore.from_documents(self.pages, self.embedder)
     def search(self, query):
         print("Searching in DB...")
         docs = self.vector_store.similarity_search_with_score(query, k=2)
@@ -65,18 +71,15 @@ class MistralRAGAgentRemote:
                             Exception("Something went wrong...")
         
 
-class RAGAgent:
+class RAGAgent(BaseAgent):
     def __init__(self, model="llama3.2"):
-        self.pages = []
+        super().__init__()
         self.embedder = OllamaEmbeddings(model=model)
         self.model = ChatOllama(model=model)
     def ingest_file(self, file_path):
         loader = PyPDFLoader(file_path)
         for page in loader.lazy_load():
             self.pages.append(page)
-        
-    def prepare_all(self):
-        self.vector_store = InMemoryVectorStore.from_documents(self.pages, self.embedder)
 
     def search(self, query):
         print("Searching in DB...")
