@@ -2,7 +2,7 @@
 
 A modular Retrieval-Augmented Generation (RAG) application that allows you to chat with your PDF documents using your favorite LLM - whether it's a cloud API or self-hosted models like Ollama.
 
-![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
+![Python](https://img.shields.io/badge/python-3.10.15+-blue.svg)
 ![Streamlit](https://img.shields.io/badge/streamlit-latest-red.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
