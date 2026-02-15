@@ -68,7 +68,7 @@ A modular Retrieval-Augmented Generation (RAG) application that allows you to ch
 
 7. **Open your browser**
    
-   The app will automatically open at `http://localhost:5000`
+   The app will automatically open at `http://localhost:8501`
 
 ## 🛠️ Configuration
 
