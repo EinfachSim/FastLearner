@@ -4,7 +4,6 @@ A modular Retrieval-Augmented Generation (RAG) application that allows you to ch
 
 ![Python](https://img.shields.io/badge/python-3.10.15+-blue.svg)
 ![Streamlit](https://img.shields.io/badge/streamlit-latest-red.svg)
-![License](https://img.shields.io/badge/license-MIT-green.svg)
 
 ## ✨ Features
 
